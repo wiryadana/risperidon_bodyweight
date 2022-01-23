@@ -5,6 +5,7 @@ date: "`r Sys.time()`"
 output: 
   html_document:
     code_folding: hide
+bibliography: pubmed-risperidon-set.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -14,19 +15,21 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Abstract
 *--- on construction ---*
 
+___
+
 ### Introduction
 Risperidone is the most well known second generation antipsychotic drugs. It has been extensively studied, both in adults and pediatrics population. In children, it has been used to treat wide variety of behavioral dan sexual disorder. Along with the other newer antipsychotic drugs, risperidone had documented fewer side effects and an overall better safety profile.  Although it has been favored as oral dopamine antagonist, it notoriusly known for its metabolic effects particularly the weight promoting and insulin resistance effects. Less attention were given to the liver damage due to antipsychotic. There are rather sporadic reports published about the hepatocellular damage of risperidone. This study aimed to estimate the overall liver function changes after risperidone treatment for behavioral disorder in children. 
 
 ### Methods
 
 #### Search strategy and study inclusion
-This systematic review and metaanalysis gathered the available evidence from various online journal database including PubMed, Cochrane Library, EuropePMC, Google Scholar, Lens.org, and Dimensions which published until Januari 2022. The initial keywords used for the search included "risperidon", "liver function", "liver enzyme" and the possible synonym. In addition, we manually searched review articles and checked reference lists for studies that might have been missed from the electronic search. The meta-analysis was conducted and reported based on Preferred Items for Systematic Reviews and Meta-analysis (PRISMA) guidelines. The inclusion criteria were (a) original studies published in English language journals, reporting data on the risperidone uses and weight changes; (b) observational studies; and (c) human studies on individuals aged less than 18 years. We excluded review papers, case series or case reports, studies on adults, and animal studies. Two authors (VLW and KAW) independently identified suitable articles according to the above criteria. The disparity in opinion on whether studies should be included in the analysis were resolved by discussion and input from the third reviewers (AFL).
+This systematic review and metaanalysis gathered the available evidence from various online journal database including PubMed, Cochrane Library, EuropePMC, Google Scholar, Lens.org, and Dimensions which published until Januari 2022. The initial keywords used for the search included "risperidon", "liver function", "liver enzyme" and the possible synonym. In addition, we manually searched review articles and checked reference lists for studies that might have been missed from the electronic search. The meta-analysis was conducted and reported based on Preferred Items for Systematic Reviews and Meta-analysis (PRISMA) guidelines. The inclusion criteria were (a) original studies published in English language journals, reporting data on liver function before and after treatment with risperidone; (b) observational studies; and (c) human studies on individuals aged less than 18 years. We excluded review papers, case series or case reports, studies on adults, and animal studies. Two authors (VLW and KAW) independently identified suitable articles according to the above criteria. The disparity in opinion on whether studies should be included in the analysis were resolved by discussion and input from the third reviewers (AFL).
  
 #### Data extraction and synthesis
 Data extraction was done independently each author. For each study, we extracted data including authors, journal, year of publication, study design, age group, gender, number of participants, and weight changes. If more than one paper with the same data or results from similar study were identified, only the one that accommodated the definitive data was included. 
 
 #### Data Analysis
-This study utilized the standardized mean difference (SMD) as the primary effect measure. Random effect model utilized to find the pooled standardized mean difference across two groups (Risperidon vs non-risperidon or control). If the published data incomplete, we primarily contact the corresponding author to kindly provide the data. Second measures was to calculate from the available data in published papers. If the study provide mean and confidence interval (CI), we converted the CI to standard deviation (SD) through standard error using methods provided by Cochrane handbook. All data preparation and analysis was conducted in R v4.1.2 and Rstudio server v.14 for Linux (Ubuntu 21.04). Meta-analysis specific calculation including inverse variant method and generation of forest and funnel plot conducted with Meta package. PRISMA 2020 chart created with PRISMA2020 package.
+This study utilized the standardized mean difference (SMD) as the primary effect measure. Random effect model utilized to find the pooled standardized mean difference across two groups (Risperidon vs non-risperidon or control). If the published data incomplete, we primarily contact the corresponding author to kindly provide the data. Second measures was to calculate from the available data in published papers. If the study provide mean and confidence interval (CI), we converted the CI to standard deviation (SD) through standard error using methods provided by Cochrane handbook [@higgins_cochrane_2021]. All data preparation and analysis was conducted in R v4.1.2 and Rstudio server v.14 for GNU/Linux Ubuntu server 21.04 [@r-base;@rstudio_team_rstudio_2021;@canonical_ubuntu_2021]. Additional data processing and analysis, including general data wrangling conducted with Tidyverse package [@tidyverse], data retrieval with [@googlesheets4] and table generation with [@DT;@gtsummary]. Meta-analysis specific calculation including inverse variant method and generation of forest and funnel plot conducted with Meta package [@meta]. PRISMA 2020 chart created with PRISMA2020 package [@PRISMA2020].
 
 ### Results
 ```{r library, echo=FALSE, message=FALSE, warning=FALSE}
@@ -41,6 +44,7 @@ library(DT)
 
 ```{r read_data, include=FALSE}
 data <- read_sheet("https://docs.google.com/spreadsheets/d/1wuHE6yukB_CNkTohHtA34Pw-vpJngCsSiq2Bf0liQZg/edit?usp=sharing",1)
+data <- data[-2,]
 ```
 
 ```{r prisma_diagram}
@@ -51,15 +55,17 @@ data <- read_sheet("https://docs.google.com/spreadsheets/d/1wuHE6yukB_CNkTohHtA3
 
 ```
 
+There were `r nrow(data)` literature included in this study [@szigethy_risperidone-induced_1999;@erdogan_risperidone_2008;@erdogan_six_2010;@karaman_liver_2011;@margari_tolerability_2013;@kowatch_placebo-controlled_2015;@scahill_weight_2016;@baeza_one-year_2018]. All studies include SGPT values, while only `r nrow(data) - 1` had SGOT values.
+
 ```{r summary_table}
-datatable(data,
+datatable(data[order(data$Year),],
           options = list(pageLength=50, 
                          scrollX='400px'), 
           filter = 'top')
 ```
 #### Forest plot of SGOT Changes before and after treatment of risperidone
 ```{r forest_plot_SGOT, fig.align='center', fig.width=12, fig.height=6}
-data1 <- data[3:9,]
+data1 <- data[2:8,]
 sgot <- metacont(n.e = data1$N_post_SGOT,
                  mean.e = data1$Mean_post_SGOT,
                  sd.e = data1$SD_post_SGOT,
@@ -73,12 +79,13 @@ forest(sgot,
        sortvar = data1$Year,
        smlab = "Mean Difference",
        lab.e = "After Treatment",
-       lab.c = "Before Treatment")
+       lab.c = "Before Treatment",
+       fixed = FALSE)
 ```
 
 #### Forest plot of SGPT Changes before and after treatment of risperidone
 ```{r forest_plot_SGPT, fig.align='center', fig.width=12, fig.height=6}
-data2 <- data[-2,]
+data2 <- data
 sgpt <- metacont(n.e = data2$N_post_SGPT,
                  mean.e = data2$Mean_post_SGPT,
                  sd.e = data2$SD_post_SGPT,
@@ -93,7 +100,8 @@ forest(sgpt,
        sortvar = data2$Year,
        smlab = "Mean Difference",
        lab.e = "After Treatment",
-       lab.c = "Before Treatment")
+       lab.c = "Before Treatment",
+       fixed = FALSE)
 ```
 
 #### Risk of publication Bias (Funnel Plot)
@@ -113,13 +121,16 @@ title("Funnel plot of the included Studies")
 ### Conclusion
 Risperidone administration in children for behavioral disorder results in increased level of liver enzyme (SGOT SGPT). However, such increase were rather minor and does not translate to any clinically meaningful consequences.
 
-### Reference
-*--- on construction ---*
+### References
 
+<div id="refs"></div>
 
-#### Statistical Software
+ 
+---
+
+#### Software (session info)
 ```{r}
-citation()
+print("Analysis run by: Kadek Adit Wiryadana (wiryadana@wiryadana.org)")
 sessionInfo()
 ```
 
